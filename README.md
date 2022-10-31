@@ -1,7 +1,7 @@
-[![Tests](../../actions/workflows/tests-13-sprint.yml/badge.svg)](../../actions/workflows/tests-13-sprint.yml) [![Tests](../../actions/workflows/tests-14-sprint.yml/badge.svg)](../../actions/workflows/tests-14-sprint.yml)
+[![Tests](../../actions/workflows/tests-13-sprint.yml/badge.svg)](../../actions/workflows/tests-13-sprint.yml) 
 # Проект Mesto фронтенд + бэкенд
 
-Рабочий проект студента Практикума Недорезова В.О.  
+Рабочий проект студента Практикума Недорезова В.О.
 В рамках проекта на практике применены полученные в рамках обучения навыки:  
 1. Основы бэкенда  
 2. Фреймворк express
@@ -11,15 +11,16 @@
 6. Работа с нереляционными БД  
 7. Обработка ошибок
 
-Фронтенд часть прощлых спринтов размещена на gh-pages: https://nedvov.github.io/react-mesto-auth/
+Ссылка на репозиторий: https://github.com/nedvov/express-mesto-gha
+Фронтенд часть прошлых спринтов размещена на gh-pages: https://nedvov.github.io/react-mesto-auth/
 
 ## Директории
 
 `/routes` — папка с файлами роутера  
 `/controllers` — папка с файлами контроллеров пользователя и карточки   
 `/models` — папка с файлами описания схем пользователя и карточки  
-  
-Остальные директории вспомогательные, создаются при необходимости разработчиком
+`/errors` — папка с файлами настраиваемых ошибок
+`/utils` — папка с утилитами 
 
 ## Запуск проекта
 

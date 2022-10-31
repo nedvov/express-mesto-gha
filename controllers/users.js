@@ -1,7 +1,7 @@
 const User = require('../models/user');
 const NotFoundError = require('../errors/NotFoundError');
 const ValidationError = require('../errors/ValidationError');
-const { catchErrors } = require('../components/utils');
+const { catchErrors } = require('../utils/catchErrors');
 
 module.exports.getUsers = (req, res) => {
   User.find({})
