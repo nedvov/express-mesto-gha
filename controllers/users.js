@@ -5,17 +5,11 @@ const { catchErrors } = require('../components/utils');
 
 module.exports.getUsers = (req, res) => {
   User.find({})
-    .then((users) => {
-      if (users.length === 0) throw new NotFoundError();
-      return res.send({ data: users });
-    })
+    .then((users) => res.send(users))
     .catch((err) => {
       catchErrors(
         err,
         res,
-        {
-          notFoundMessage: 'Ошибка. Еще ни один пользователь не был создан',
-        },
       );
     });
 };
@@ -24,7 +18,7 @@ module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
 
   User.create({ name, about, avatar })
-    .then((user) => res.send({ data: user }))
+    .then((user) => res.send(user))
     .catch((err) => {
       catchErrors(
         err,
@@ -42,7 +36,7 @@ module.exports.getUserByUserId = (req, res) => {
   User.findById(userId)
     .then((user) => {
       if (user === null) throw new NotFoundError();
-      return res.send({ data: user });
+      return res.send(user);
     })
     .catch((err) => {
       catchErrors(
@@ -64,7 +58,7 @@ module.exports.updateUserByUserId = (req, res) => {
     .then((user) => {
       if (user === null) throw new NotFoundError();
       if (!name || !about) throw new ValidationError();
-      return res.send({ data: user });
+      return res.send(user);
     })
     .catch((err) => {
       catchErrors(
@@ -86,7 +80,7 @@ module.exports.updateAvatarByUserId = (req, res) => {
     .then((user) => {
       if (user === null) throw new NotFoundError();
       if (!avatar) throw new ValidationError();
-      return res.send({ data: user });
+      return res.send(user);
     })
     .catch((err) => {
       catchErrors(
