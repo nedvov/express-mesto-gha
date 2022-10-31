@@ -36,7 +36,7 @@ module.exports.getUserByUserId = (req, res) => {
   User.findById(userId)
     .then((user) => {
       if (user === null) throw new NotFoundError();
-      return res.send(user);
+      else res.send(user);
     })
     .catch((err) => {
       catchErrors(
@@ -56,9 +56,9 @@ module.exports.updateUserByUserId = (req, res) => {
 
   User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true, upsert: false })
     .then((user) => {
-      if (user === null) throw new NotFoundError();
       if (!name || !about) throw new ValidationError();
-      return res.send(user);
+      else if (user === null) throw new NotFoundError();
+      else res.send(user);
     })
     .catch((err) => {
       catchErrors(
@@ -78,9 +78,9 @@ module.exports.updateAvatarByUserId = (req, res) => {
 
   User.findByIdAndUpdate(userId, { avatar }, { new: true, runValidators: true, upsert: false })
     .then((user) => {
-      if (user === null) throw new NotFoundError();
       if (!avatar) throw new ValidationError();
-      return res.send(user);
+      else if (user === null) throw new NotFoundError();
+      else res.send(user);
     })
     .catch((err) => {
       catchErrors(

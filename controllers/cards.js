@@ -37,7 +37,7 @@ module.exports.removeCardByCardId = (req, res) => {
     .populate(['owner', 'likes'])
     .then((card) => {
       if (card === null) throw new NotFoundError();
-      return res.send(card);
+      else res.send(card);
     })
     .catch((err) => {
       catchErrors(
@@ -59,7 +59,7 @@ module.exports.likeCardByCardId = (req, res) => {
     .populate(['owner', 'likes'])
     .then((card) => {
       if (card === null) throw new NotFoundError();
-      return res.send(card);
+      else res.send(card);
     })
     .catch((err) => {
       catchErrors(
@@ -81,7 +81,7 @@ module.exports.removeLikeFromCardByCardId = (req, res) => {
     .populate(['owner', 'likes'])
     .then((card) => {
       if (card === null) throw new NotFoundError();
-      return res.send(card);
+      else res.send(card);
     })
     .catch((err) => {
       catchErrors(
