@@ -4,17 +4,11 @@ const { catchErrors } = require('../components/utils');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
-    .then((cards) => {
-      if (cards.length === 0) throw new NotFoundError();
-      return res.send({ data: cards });
-    })
+    .then((cards) => res.send({ data: cards }))
     .catch((err) => {
       catchErrors(
         err,
         res,
-        {
-          notFoundMessage: 'Ошибка. Еще ни одна карточка не была создана',
-        },
       );
     });
 };
