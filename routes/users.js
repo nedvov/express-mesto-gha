@@ -9,7 +9,7 @@ const {
   updateAvatarByUserId,
 } = require('../controllers/users');
 
-usersRouter.get('/', getUsers);
+usersRouter.get('/', auth, getUsers);
 
 usersRouter.get('/me', auth, getUserByUserId);
 
@@ -30,7 +30,7 @@ usersRouter.patch(
   auth,
   celebrate({
     body: Joi.object().keys({
-      avatar: Joi.string().required().pattern(new RegExp('^https?://(www.)?[0-9a-zA-Z-./?&#]+'))
+      avatar: Joi.string().required(),
     }),
   }),
   updateAvatarByUserId,

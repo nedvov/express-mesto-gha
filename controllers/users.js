@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
 const UniqueError = require('../errors/UniqueError');
 
@@ -28,6 +29,8 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.code === 11000) next(new UniqueError('Ошибка. Пользователь с таким email уже найден'));
+      if (err.name === 'ValidationError') next(new ValidationError(err.message));
+      next(err);
     });
 };
 
@@ -40,7 +43,10 @@ module.exports.updateUserByUserId = (req, res, next) => {
       if (user === null) throw new NotFoundError('Ошибка. Запрашиваемый пользователь не найден');
       else res.send(user);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') next(new ValidationError(err.message));
+      next(err);
+    });
 };
 
 module.exports.updateAvatarByUserId = (req, res, next) => {
@@ -52,7 +58,10 @@ module.exports.updateAvatarByUserId = (req, res, next) => {
       if (user === null) throw new NotFoundError('Ошибка. Запрашиваемый пользователь не найден');
       else res.send(user);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') next(new ValidationError(err.message));
+      next(err);
+    });
 };
 
 module.exports.login = (req, res, next) => {
@@ -65,7 +74,10 @@ module.exports.login = (req, res, next) => {
       res.send({ message: 'Авторизация пройдена успешно' });
       res.end();
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') next(new ValidationError(err.message));
+      next(err);
+    });
 };
 
 module.exports.getUserByUserId = (req, res, next) => {

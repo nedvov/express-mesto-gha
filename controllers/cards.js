@@ -13,7 +13,10 @@ module.exports.createCard = (req, res, next) => {
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send(card))
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') next(new ValidationError(err.message));
+      next(err);
+    });
 };
 
 module.exports.removeCardByCardId = (req, res, next) => {
@@ -30,7 +33,10 @@ module.exports.removeCardByCardId = (req, res, next) => {
         Card.findByIdAndRemove(cardId).then((dcard) => res.send(dcard));
       } else throw new ForbiddenError('Нельзя удалять чужие карточки');
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') next(new ValidationError(err.message));
+      next(err);
+    });
 };
 
 module.exports.likeCardByCardId = (req, res, next) => {
@@ -49,7 +55,10 @@ module.exports.likeCardByCardId = (req, res, next) => {
         );
       } else res.send(card);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') next(new ValidationError(err.message));
+      next(err);
+    });
 };
 
 module.exports.removeLikeFromCardByCardId = (req, res, next) => {
@@ -64,5 +73,8 @@ module.exports.removeLikeFromCardByCardId = (req, res, next) => {
         );
       } else res.send(card);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') next(new ValidationError(err.message));
+      next(err);
+    });
 };
