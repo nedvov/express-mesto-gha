@@ -28,6 +28,7 @@ module.exports.createUser = (req, res, next) => {
       });
     })
     .catch((err) => {
+      console.log(err);
       if (err.code === 11000) next(new UniqueError('Ошибка. Пользователь с таким email уже найден'));
       if (err.name === 'ValidationError') next(new ValidationError(err.message));
       next(err);
