@@ -1,95 +1,80 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const NotFoundError = require('../errors/NotFoundError');
-const ValidationError = require('../errors/ValidationError');
-const { catchErrors } = require('../utils/catchErrors');
+const UniqueError = require('../errors/UniqueError');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch((err) => {
-      catchErrors(
-        err,
-        res,
-      );
-    });
+    .catch(next);
 };
 
-module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+module.exports.createUser = (req, res, next) => {
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
 
-  User.create({ name, about, avatar })
-    .then((user) => res.send(user))
-    .catch((err) => {
-      catchErrors(
-        err,
-        res,
-        {
-          validationMessage: 'Ошибка. Переданы некорректные данные при создании пользователя',
-        },
-      );
-    });
-};
-
-module.exports.getUserByUserId = (req, res) => {
-  const { userId } = req.params;
-
-  User.findById(userId)
+  bcrypt.hash(password, 10)
+    .then(
+      (hash) => User.create({
+        name, about, avatar, email, password: hash,
+      }),
+    )
     .then((user) => {
-      if (user === null) throw new NotFoundError();
-      else res.send(user);
+      res.send({
+        _id: user._id, name: user.name, email: user.email, about: user.about, avatar: user.avatar,
+      });
     })
     .catch((err) => {
-      catchErrors(
-        err,
-        res,
-        {
-          notFoundMessage: 'Ошибка. Запрашиваемый пользователь не найден',
-          validationMessage: 'Ошибка. Передан некорректный идентификатор пользователя',
-        },
-      );
+      if (err.code === 11000) next(new UniqueError('Ошибка. Пользователь с таким email уже найден'));
     });
 };
 
-module.exports.updateUserByUserId = (req, res) => {
+module.exports.updateUserByUserId = (req, res, next) => {
   const { name, about } = req.body;
   const userId = req.user._id;
 
   User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true, upsert: false })
     .then((user) => {
-      if (!name || !about) throw new ValidationError();
-      else if (user === null) throw new NotFoundError();
+      if (user === null) throw new NotFoundError('Ошибка. Запрашиваемый пользователь не найден');
       else res.send(user);
     })
-    .catch((err) => {
-      catchErrors(
-        err,
-        res,
-        {
-          notFoundMessage: 'Ошибка. Запрашиваемый пользователь не найден',
-          validationMessage: 'Ошибка. Переданы некорректные данные при обновлении пользователя',
-        },
-      );
-    });
+    .catch(next);
 };
 
-module.exports.updateAvatarByUserId = (req, res) => {
+module.exports.updateAvatarByUserId = (req, res, next) => {
   const { avatar } = req.body;
   const userId = req.user._id;
 
   User.findByIdAndUpdate(userId, { avatar }, { new: true, runValidators: true, upsert: false })
     .then((user) => {
-      if (!avatar) throw new ValidationError();
-      else if (user === null) throw new NotFoundError();
+      if (user === null) throw new NotFoundError('Ошибка. Запрашиваемый пользователь не найден');
       else res.send(user);
     })
-    .catch((err) => {
-      catchErrors(
-        err,
-        res,
-        {
-          notFoundMessage: 'Ошибка. Запрашиваемый пользователь не найден',
-          validationMessage: 'Ошибка. Переданы некорректные данные при обновлении аватара',
-        },
-      );
-    });
+    .catch(next);
+};
+
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, '8c9701e1290ceb57731ecf3947aaee3f0483484d241773445e2319d9c54fd042', { expiresIn: '7d' });
+      res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true, sameSite: true });
+      res.send({ message: 'Авторизация пройдена успешно' });
+      res.end();
+    })
+    .catch(next);
+};
+
+module.exports.getUserByUserId = (req, res, next) => {
+  const userId = req.user._id;
+
+  User.findById(userId)
+    .then((user) => {
+      if (user === null) throw new NotFoundError('Ошибка. Запрашиваемый пользователь не найден');
+      else res.send(user);
+    })
+    .catch(next);
 };
