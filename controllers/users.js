@@ -4,6 +4,7 @@ const User = require('../models/user');
 const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
 const UniqueError = require('../errors/UniqueError');
+const CastError = require('../errors/ValidationError');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -28,36 +29,36 @@ module.exports.createUser = (req, res, next) => {
       });
     })
     .catch((err) => {
-      console.log(err);
       if (err.code === 11000) next(new UniqueError('Ошибка. Пользователь с таким email уже найден'));
-      if (err.name === 'ValidationError') next(new ValidationError(err.message));
-      next(err);
+      else if (err.name === 'ValidationError') next(new ValidationError(err.message));
+      else next(err);
     });
 };
 
 module.exports.getUserByUserId = (req, res, next) => {
   const { userId } = req.params;
 
-  User.findById(userId)
+  User.findById(userId).orFail(new NotFoundError('Ошибка. Запрашиваемый пользователь не найден'))
     .then((user) => {
-      if (user === null) throw new NotFoundError('Ошибка. Запрашиваемый пользователь не найден');
-      else res.send(user);
+      res.send(user);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') next(new CastError('Передан некорректный идентификатор пользователя'));
+      else next(err);
+    });
 };
 
 module.exports.updateUserByUserId = (req, res, next) => {
   const { name, about } = req.body;
   const userId = req.user._id;
 
-  User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true, upsert: false })
+  User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true, upsert: false }).orFail(new NotFoundError('Ошибка. Запрашиваемый пользователь не найден'))
     .then((user) => {
-      if (user === null) throw new NotFoundError('Ошибка. Запрашиваемый пользователь не найден');
-      else res.send(user);
+      res.send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') next(new ValidationError(err.message));
-      next(err);
+      else next(err);
     });
 };
 
@@ -65,14 +66,13 @@ module.exports.updateAvatarByUserId = (req, res, next) => {
   const { avatar } = req.body;
   const userId = req.user._id;
 
-  User.findByIdAndUpdate(userId, { avatar }, { new: true, runValidators: true, upsert: false })
+  User.findByIdAndUpdate(userId, { avatar }, { new: true, runValidators: true, upsert: false }).orFail(new NotFoundError('Ошибка. Запрашиваемый пользователь не найден'))
     .then((user) => {
-      if (user === null) throw new NotFoundError('Ошибка. Запрашиваемый пользователь не найден');
-      else res.send(user);
+      res.send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') next(new ValidationError(err.message));
-      next(err);
+      else next(err);
     });
 };
 
@@ -84,21 +84,16 @@ module.exports.login = (req, res, next) => {
       const token = jwt.sign({ _id: user._id }, '8c9701e1290ceb57731ecf3947aaee3f0483484d241773445e2319d9c54fd042', { expiresIn: '7d' });
       res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true, sameSite: true });
       res.send({ message: 'Авторизация пройдена успешно' });
-      res.end();
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') next(new ValidationError(err.message));
-      next(err);
-    });
+    .catch(next);
 };
 
 module.exports.getMe = (req, res, next) => {
   const userId = req.user._id;
 
-  User.findById(userId)
+  User.findById(userId).orFail(new NotFoundError('Ошибка. Запрашиваемый пользователь не найден'))
     .then((user) => {
-      if (user === null) throw new NotFoundError('Ошибка. Запрашиваемый пользователь не найден');
-      else res.send(user);
+      res.send(user);
     })
     .catch(next);
 };

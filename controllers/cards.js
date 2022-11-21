@@ -2,6 +2,7 @@ const Card = require('../models/card');
 const NotFoundError = require('../errors/NotFoundError');
 const ForbiddenError = require('../errors/ForbiddenError');
 const ValidationError = require('../errors/ValidationError');
+const CastError = require('../errors/ValidationError');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
@@ -15,8 +16,7 @@ module.exports.createCard = (req, res, next) => {
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send(card))
     .catch((err) => {
-      if (err.name === 'ValidationError') next(new ValidationError(err.message));
-      next(err);
+      if (err.name === 'ValidationError') { next(new ValidationError(err.message)); } else next(err);
     });
 };
 
@@ -24,19 +24,18 @@ module.exports.removeCardByCardId = (req, res, next) => {
   const { cardId } = req.params;
   const userId = req.user._id;
   Card.findById(cardId)
+    .orFail(new NotFoundError('Ошибка. Запрашиваемая карточка не найдена'))
     .then((card) => {
-      if (card === null) {
-        throw new NotFoundError(
-          'Ошибка. Запрашиваемая карточка не найдена',
-        );
-      }
       if (card.owner.toString() === userId) {
         Card.findByIdAndRemove(cardId).then((dcard) => res.send(dcard));
       } else throw new ForbiddenError('Нельзя удалять чужие карточки');
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') next(new ValidationError(err.message));
-      next(err);
+      if (err.name === 'CastError') {
+        next(
+          new CastError('Передан некорректный идентификатор карточки'),
+        );
+      } else next(err);
     });
 };
 
@@ -49,16 +48,16 @@ module.exports.likeCardByCardId = (req, res, next) => {
     { $addToSet: { likes: userId } },
     { new: true },
   )
+    .orFail(new NotFoundError('Ошибка. Запрашиваемая карточка не найдена'))
     .then((card) => {
-      if (card === null) {
-        throw new NotFoundError(
-          'Ошибка. Запрашиваемая карточка не найдена',
-        );
-      } else res.send(card);
+      res.send(card);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') next(new ValidationError(err.message));
-      next(err);
+      if (err.name === 'ValidationError') { next(new ValidationError(err.message)); } else if (err.name === 'CastError') {
+        next(
+          new CastError('Передан некорректный идентификатор карточки'),
+        );
+      } else next(err);
     });
 };
 
@@ -67,15 +66,15 @@ module.exports.removeLikeFromCardByCardId = (req, res, next) => {
   const userId = req.user._id;
 
   Card.findByIdAndUpdate(cardId, { $pull: { likes: userId } }, { new: true })
+    .orFail(new NotFoundError('Ошибка. Запрашиваемая карточка не найдена'))
     .then((card) => {
-      if (card === null) {
-        throw new NotFoundError(
-          'Ошибка. Запрашиваемая карточка не найдена',
-        );
-      } else res.send(card);
+      res.send(card);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') next(new ValidationError(err.message));
-      next(err);
+      if (err.name === 'ValidationError') { next(new ValidationError(err.message)); } else if (err.name === 'CastError') {
+        next(
+          new CastError('Передан некорректный идентификатор карточки'),
+        );
+      } else next(err);
     });
 };
