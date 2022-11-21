@@ -7,13 +7,24 @@ const {
   getUserByUserId,
   updateUserByUserId,
   updateAvatarByUserId,
+  getMe,
 } = require('../controllers/users');
 
 const linkPattern = /^https?:\/\/(www.)?[0-9a-zA-Z-._~:/?#[\]@!$&\\'()*+,;=]+/;
 
 usersRouter.get('/', auth, getUsers);
 
-usersRouter.get('/me', auth, getUserByUserId);
+usersRouter.get('/me', auth, getMe);
+usersRouter.get(
+  '/:userId',
+  auth,
+  celebrate({
+    params: Joi.object().keys({
+      userId: Joi.string().alphanum().length(24),
+    }),
+  }),
+  getUserByUserId,
+);
 
 usersRouter.patch(
   '/me',

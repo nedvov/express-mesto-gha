@@ -35,6 +35,17 @@ module.exports.createUser = (req, res, next) => {
     });
 };
 
+module.exports.getUserByUserId = (req, res, next) => {
+  const { userId } = req.params;
+
+  User.findById(userId)
+    .then((user) => {
+      if (user === null) throw new NotFoundError('Ошибка. Запрашиваемый пользователь не найден');
+      else res.send(user);
+    })
+    .catch(next);
+};
+
 module.exports.updateUserByUserId = (req, res, next) => {
   const { name, about } = req.body;
   const userId = req.user._id;
@@ -81,7 +92,7 @@ module.exports.login = (req, res, next) => {
     });
 };
 
-module.exports.getUserByUserId = (req, res, next) => {
+module.exports.getMe = (req, res, next) => {
   const userId = req.user._id;
 
   User.findById(userId)
