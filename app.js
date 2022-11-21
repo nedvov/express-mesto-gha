@@ -13,6 +13,8 @@ const { login, createUser } = require('./controllers/users');
 const { PORT = 3000 } = process.env;
 const app = express();
 
+const emailPattern = /([A-z0-9_.-]{1,})@([A-z0-9_.-]{1,}).([A-z]{2,8})/;
+
 app.use(bodyParser.json());
 app.use(cookieParser());
 
@@ -22,7 +24,7 @@ app.post(
   '/signin',
   celebrate({
     body: Joi.object().keys({
-      email: Joi.string().required().min(2).max(30),
+      email: Joi.string().required().pattern(new RegExp(emailPattern)),
       password: Joi.string().required().min(2).max(30),
     }),
   }),
@@ -32,8 +34,8 @@ app.post(
   '/signup',
   celebrate({
     body: Joi.object().keys({
-      email: Joi.string().required().min(2).max(30),
-      password: Joi.string().required().min(2).max(30),
+      email: Joi.string().required().pattern(new RegExp(emailPattern)),
+      password: Joi.string().required(),
       name: Joi.string().min(2).max(30),
       about: Joi.string().min(2).max(30),
       avatar: Joi.string(),
