@@ -2,7 +2,6 @@ const Card = require('../models/card');
 const NotFoundError = require('../errors/NotFoundError');
 const ForbiddenError = require('../errors/ForbiddenError');
 const ValidationError = require('../errors/ValidationError');
-const CastError = require('../errors/ValidationError');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
@@ -33,7 +32,7 @@ module.exports.removeCardByCardId = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         next(
-          new CastError('Передан некорректный идентификатор карточки'),
+          new ValidationError('Передан некорректный идентификатор карточки'),
         );
       } else next(err);
     });
@@ -55,7 +54,7 @@ module.exports.likeCardByCardId = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') { next(new ValidationError(err.message)); } else if (err.name === 'CastError') {
         next(
-          new CastError('Передан некорректный идентификатор карточки'),
+          new ValidationError('Передан некорректный идентификатор карточки'),
         );
       } else next(err);
     });
@@ -73,7 +72,7 @@ module.exports.removeLikeFromCardByCardId = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') { next(new ValidationError(err.message)); } else if (err.name === 'CastError') {
         next(
-          new CastError('Передан некорректный идентификатор карточки'),
+          new ValidationError('Передан некорректный идентификатор карточки'),
         );
       } else next(err);
     });
